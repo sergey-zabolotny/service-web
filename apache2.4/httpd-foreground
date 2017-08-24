@@ -9,6 +9,19 @@ echo "Configuring Apache2 environment variables..."
 # Set ServerName of created container
 export APACHE_SERVERNAME="${APACHE_SERVERNAME:-$(cat /etc/hostname)}"
 
+# Support for configuration overrides
+include_conf ()
+{
+	file=$1
+
+	if [[ -f "$file" ]]; then
+		echo "Including configuration overrides from $file"
+		cp "$file" /usr/local/apache2/conf/custom
+	fi
+}
+include_conf "/var/www/.docksal/etc/apache/httpd-vhost-overrides.conf"
+include_conf "/var/www/.docksal/etc/apache/httpd-vhosts.conf"
+
 # Run in foreground
 args="-DFOREGROUND"
 
