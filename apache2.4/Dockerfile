@@ -14,6 +14,7 @@ ENV \
 RUN set -x \
 	# Enabled extra modules
 	&& sed -i '/^#.* proxy_module /s/^#//' /usr/local/apache2/conf/httpd.conf \
+	&& sed -i '/^#.* proxy_http_module /s/^#//' /usr/local/apache2/conf/httpd.conf \
 	&& sed -i '/^#.* proxy_fcgi_module /s/^#//' /usr/local/apache2/conf/httpd.conf \
 	&& sed -i '/^#.* proxy_connect_module /s/^#//' /usr/local/apache2/conf/httpd.conf \
 	&& sed -i '/^#.* ssl_module /s/^#//' /usr/local/apache2/conf/httpd.conf \
