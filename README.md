@@ -9,9 +9,15 @@ This image(s) is part of the [Docksal](http://docksal.io) image library.
 
 ## Features
 
-- SSL enabled (self-signed cer)
-- HTTP Basic Authentication
+- SSL enabled (self-signed cert)
 - PHP handling via FastCGI (`mod_proxy_fcgi`) (both 2.2 and 2.4)
+- HTTP Basic Authentication
+- Support for configuration overrides
+
+## Document root
+
+Apache `DocumentRoot` for the default virtual host can be set via `APACHE_DOCUMENTROOT`environment variable 
+(defaults to `/var/www/docroot`). 
 
 ## FastCGI server endpoint
 
@@ -30,4 +36,25 @@ Example with Docker Compose
     - APACHE_BASIC_AUTH_USER=user
     - APACHE_BASIC_AUTH_PASS=password
   ...
+```
+
+## Configuration overrides
+
+Configuration overrides can be added to a Docksal project codebase.
+
+Use `.docksal/etc/apache/httpd-vhost-overrides.conf` to override the default virtual host configuration:
+
+```apacheconfig
+DirectoryIndex index2.html
+```
+
+Use `.docksal/etc/apache/httpd-vhosts.conf` to define additional virtual hosts:
+
+```apacheconfig
+<VirtualHost *:80>
+	ServerName docs.test.docksal
+
+	ProxyPass / http://docs.docksal.io/
+	ProxyPassReverse / http://docs.docksal.io/
+</VirtualHost>
 ```

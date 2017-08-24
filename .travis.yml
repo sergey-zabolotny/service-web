@@ -1,0 +1,21 @@
+language: generic
+
+services:
+  - docker
+
+env:
+  matrix:
+    - VERSION=apache2.2
+    - VERSION=apache2.4
+
+install:
+  - curl -fsSL get.docksal.io | sh
+  - fin version
+  - fin sysinfo
+
+script:
+  - cd ${VERSION}
+  - make && make test
+
+after_failure:
+  - make logs
