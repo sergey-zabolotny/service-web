@@ -9,11 +9,14 @@ echo "Configuring Apache2 environment variables..."
 # Set ServerName of created container
 export APACHE_SERVERNAME="${APACHE_SERVERNAME:-$(cat /etc/hostname)}"
 
+# Run in foreground
+args="-DFOREGROUND"
+
 # Basic HTTP Authentication
 if [[ "$APACHE_BASIC_AUTH_USER" != "" ]] && [[ "$APACHE_BASIC_AUTH_PASS" != "" ]]; then
 	echo "Enabling Basic HTTP Authentication [$APACHE_BASIC_AUTH_USER:$APACHE_BASIC_AUTH_PASS]"
 	htpasswd -cb /usr/local/apache2/htpasswd "$APACHE_BASIC_AUTH_USER" "$APACHE_BASIC_AUTH_PASS"
-	exec httpd -DFOREGROUND -DBasicAuth
-else
-	exec httpd -DFOREGROUND
+	args+=" -DBasicAuth"
 fi
+
+exec httpd ${args}
