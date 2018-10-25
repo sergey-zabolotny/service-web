@@ -1,4 +1,4 @@
-FROM httpd:2.4-alpine
+FROM httpd:2.4.35-alpine
 
 # Generate a self-signed cert
 RUN apk add --no-cache openssl \

@@ -196,7 +196,7 @@ _healthcheck_wait ()
 
 	# Test extra virtual hosts config
 	run curl -sSk -I http://docs.test.docksal:2580
-	echo "$output" | grep "HTTP/1.1 302"
+	echo "$output" | grep "HTTP/1.1 301"
 
 	run curl -sSk -L http://docs.test.docksal:2580
 	echo "$output"| grep "Docksal Documentation"
