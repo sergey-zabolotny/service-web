@@ -13,6 +13,53 @@ teardown() {
 	echo "================================================================"
 }
 
+# Checks container health status (if available)
+# @param $1 container id/name
+_healthcheck ()
+{
+    local health_status
+    health_status=$(docker inspect --format='{{json .State.Health.Status}}' "$1" 2>/dev/null)
+
+    # Wait for 5s then exit with 0 if a container does not have a health status property
+    # Necessary for backward compatibility with images that do not support health checks
+    if [[ $? != 0 ]]; then
+	echo "Waiting 10s for container to start..."
+	sleep 10
+	return 0
+    fi
+
+    # If it does, check the status
+    echo $health_status | grep '"healthy"' >/dev/null 2>&1
+}
+
+# Waits for containers to become healthy
+# For reasoning why we are not using  `depends_on` `condition` see here:
+# https://github.com/docksal/docksal/issues/225#issuecomment-306604063
+_healthcheck_wait ()
+{
+    # Wait for cli to become ready by watching its health status
+    local container_name="${NAME}"
+    local delay=5
+    local timeout=30
+    local elapsed=0
+
+    until _healthcheck "$container_name"; do
+	echo "Waiting for $container_name to become ready..."
+	sleep "$delay";
+
+	# Give the container 30s to become ready
+	elapsed=$((elapsed + delay))
+	if ((elapsed > timeout)); then
+	    echo-error "$container_name heathcheck failed" \
+		"Container did not enter a healthy state within the expected amount of time." \
+		"Try ${yellow}fin restart${NC}"
+	    exit 1
+	fi
+    done
+
+    return 0
+}
+
 # Global skip
 # Uncomment below, then comment skip in the test you want to debug. When done, reverse.
 #SKIP=1
@@ -24,8 +71,7 @@ teardown() {
 	fin docker rm -vf "$NAME" >/dev/null 2>&1 || true
 	fin docker run --name "$NAME" -d -p 2580:80 -p 25443:443 \
 		"$IMAGE"
-	sleep 2 # TODO: replace with a healthcheck
-
+	_healthcheck_wait
 
 	### Tests ###
 
@@ -57,8 +103,7 @@ teardown() {
 	fin docker run --name "$NAME" -d -p 2580:80 -p 25443:443 \
 		-v $(pwd)/../tests/docroot:/var/www/docroot \
 		"$IMAGE"
-	sleep 2 # TODO: replace with a healthcheck
-
+	_healthcheck_wait
 
 	### Tests ###
 
@@ -82,8 +127,7 @@ teardown() {
 		-v $(pwd)/../tests/docroot:/var/www/html \
 		-e APACHE_DOCUMENTROOT=/var/www/html \
 		"$IMAGE"
-	sleep 2 # TODO: replace with a healthcheck
-
+	_healthcheck_wait
 
 	### Tests ###
 
@@ -108,8 +152,7 @@ teardown() {
 		-e APACHE_BASIC_AUTH_USER=user \
 		-e APACHE_BASIC_AUTH_PASS=pass \
 		"$IMAGE" >/dev/null
-	sleep 2 # TODO: replace with a healthcheck
-
+	_healthcheck_wait
 
 	### Tests ###
 
@@ -140,8 +183,7 @@ teardown() {
 		-v $(pwd)/../tests/docroot:/var/www/docroot \
 		-v $(pwd)/../tests/config:/var/www/.docksal/etc/apache \
 		"$IMAGE" >/dev/null
-	sleep 2 # TODO: replace with a healthcheck
-
+	_healthcheck_wait
 
 	### Tests ###
 
