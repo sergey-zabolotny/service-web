@@ -1,4 +1,4 @@
-FROM httpd:2.2-alpine
+FROM httpd:2.2.34-alpine
 
 # Build mod_proxy_fcgi from source
 RUN set -x \
