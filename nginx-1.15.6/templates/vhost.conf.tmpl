@@ -1,0 +1,36 @@
+include upstream.conf;
+
+server {
+    listen       80 default_server{{ if getenv "NGINX_HTTP2" }} http2{{ end }};
+    server_name  {{ getenv "NGINX_SERVER_NAME" "default" }};
+
+    root {{ getenv "NGINX_SERVER_ROOT" "/usr/share/nginx/html" }};
+
+    {{ if getenv "NGINX_VHOST_PRESET" }}
+    include preset.conf;
+    {{ end }}
+
+    {{ if not (getenv "NGINX_VHOST_NO_DEFAULTS") }}
+    include defaults.conf;
+    {{ end }}
+}
+
+server {
+    listen       443 default_server{{ if getenv "NGINX_HTTP2" }} http2{{ end }};
+    server_name  {{ getenv "NGINX_SERVER_NAME" "default" }};
+
+    include ssl.conf;
+
+    ssl_certificate      ssl/auth.crt;
+    ssl_certificate_key  ssl/auth.key;
+
+    root {{ getenv "NGINX_SERVER_ROOT" "/usr/share/nginx/html" }};
+
+    {{ if getenv "NGINX_VHOST_PRESET" }}
+    include preset.conf;
+    {{ end }}
+
+    {{ if not (getenv "NGINX_VHOST_NO_DEFAULTS") }}
+    include defaults.conf;
+    {{ end }}
+}
